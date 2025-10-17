@@ -232,6 +232,229 @@ allow_origins=["https://yourdomain.com"],
 
 MIT License
 
+## Docker Deployment
+
+### Building the Docker Image
+
+```bash
+docker build -t contact-form-api .
+```
+
+### Running with Docker
+
+```bash
+docker run -p 8000:8000 \
+  -e BREVO_API_KEY=your_api_key \
+  -e SENDER_EMAIL=your_verified_email@example.com \
+  -e SENDER_NAME="Contact Form" \
+  -e RECIPIENT_EMAIL=dumilakshan4878@gmail.com \
+  contact-form-api
+```
+
+Or use the `.env` file:
+
+```bash
+docker run -p 8000:8000 --env-file .env contact-form-api
+```
+
+### Running with Docker Compose
+
+```bash
+docker-compose up -d
+```
+
+To stop:
+
+```bash
+docker-compose down
+```
+
+To view logs:
+
+```bash
+docker-compose logs -f
+```
+
+## Deploying to Coolify
+
+Coolify is a self-hosted platform that makes deployment easy. Here's how to deploy this application:
+
+### Prerequisites
+
+- A running Coolify instance
+- Your GitHub repository connected to Coolify
+- Brevo API credentials
+
+### Deployment Steps
+
+#### 1. Connect Your Repository
+
+1. Log in to your Coolify dashboard
+2. Go to **Projects** → **New Project**
+3. Select **GitHub** as the source
+4. Connect and authorize your GitHub account
+5. Select this repository: `DumiduLakshan/Portfolio-Mail-Sender`
+
+#### 2. Configure the Application
+
+1. After selecting the repository, Coolify will detect the Dockerfile automatically
+2. Set the **Build Pack** to **Dockerfile**
+3. Configure the **Port**: `8000`
+4. Set the **Health Check** endpoint: `/health`
+
+#### 3. Set Environment Variables
+
+In Coolify's Environment Variables section, add:
+
+```
+BREVO_API_KEY=your_actual_brevo_api_key
+SENDER_EMAIL=your_verified_email@example.com
+SENDER_NAME=Contact Form
+RECIPIENT_EMAIL=dumilakshan4878@gmail.com
+```
+
+**Important:** Mark `BREVO_API_KEY` as **secret** to hide it from logs.
+
+#### 4. Configure Domain (Optional)
+
+1. Go to **Domains** tab
+2. Add your custom domain or use the Coolify-provided domain
+3. Enable **SSL/TLS** (Let's Encrypt is automatic)
+
+#### 5. Deploy
+
+1. Click **Deploy** button
+2. Coolify will:
+   - Clone your repository
+   - Build the Docker image
+   - Start the container
+   - Set up SSL/TLS
+   - Configure health checks
+
+#### 6. Monitor Deployment
+
+- View **Logs** tab for build and runtime logs
+- Check **Deployments** tab for deployment history
+- Use **Health Check** to ensure the app is running
+
+### Coolify Configuration Tips
+
+#### Auto-Deploy on Git Push
+
+Enable automatic deployments:
+
+1. Go to **General** settings
+2. Enable **Auto Deploy**
+3. Select branch: `main`
+4. Now every push to `main` triggers a deployment
+
+#### Resource Limits
+
+Set resource limits in Coolify:
+
+```yaml
+Memory Limit: 512MB
+CPU Limit: 0.5 cores
+```
+
+#### Custom Docker Build Args (if needed)
+
+If you need custom build arguments:
+
+1. Go to **Build** settings
+2. Add **Build Args**:
+   ```
+   PYTHON_VERSION=3.11
+   ```
+
+#### Persistent Storage (if needed in future)
+
+If you need to persist data:
+
+1. Go to **Storage** tab
+2. Add a volume:
+   - **Source**: `/app/data`
+   - **Destination**: `/app/data`
+
+### Environment Variable Management in Coolify
+
+- **Secrets**: Use for API keys (not visible in logs)
+- **Public**: Use for non-sensitive config
+- **Build-time**: Variables needed during Docker build
+- **Runtime**: Variables needed when container runs
+
+### Coolify Deployment Checklist
+
+- ✅ Repository connected to Coolify
+- ✅ Dockerfile detected
+- ✅ Port 8000 configured
+- ✅ Health check endpoint `/health` set
+- ✅ Environment variables configured
+- ✅ `BREVO_API_KEY` marked as secret
+- ✅ Domain configured (optional)
+- ✅ SSL/TLS enabled
+- ✅ Auto-deploy enabled (optional)
+
+### Troubleshooting Coolify Deployment
+
+#### Build Fails
+
+- Check **Build Logs** in Coolify
+- Verify Dockerfile syntax
+- Ensure all dependencies in `requirements.txt`
+
+#### Container Crashes
+
+- Check **Runtime Logs**
+- Verify environment variables are set correctly
+- Test health check endpoint: `curl https://yourdomain.com/health`
+
+#### Health Check Fails
+
+- Ensure `/health` endpoint is accessible
+- Check if port 8000 is correctly exposed
+- Verify the container is actually running
+
+#### Rate Limiting Issues
+
+The app uses in-memory rate limiting, which resets on container restart. For production:
+
+1. Consider using Redis for persistent rate limiting
+2. Or accept that rate limits reset on deployment
+
+### Accessing Your Deployed API
+
+Once deployed, your API will be available at:
+
+- **Coolify subdomain**: `https://your-app.coolify.yourdomain.com`
+- **Custom domain**: `https://api.yourdomain.com` (if configured)
+
+Test it:
+
+```bash
+curl -X POST "https://your-app.coolify.yourdomain.com/contact" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "John Doe",
+    "email": "john@example.com",
+    "subject": "Test from Coolify",
+    "message": "This is a test message from my deployed app!"
+  }'
+```
+
+### Updating Your Deployment
+
+**Manual Update:**
+
+1. Push changes to GitHub
+2. Go to Coolify dashboard
+3. Click **Redeploy** button
+
+**Automatic Update:**
+
+- If auto-deploy is enabled, just push to `main` branch
+- Coolify will automatically rebuild and redeploy
+
 ## Support
 
 For issues or questions, please open an issue in the repository.
