@@ -19,7 +19,8 @@ limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(
     title="Contact Form API",
     description="API for handling contact form submissions with email notifications",
-    version="1.0.0"
+    version="1.0.0",
+    docs_url=None
 )
 
 # Add rate limit exception handler
